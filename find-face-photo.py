@@ -5,32 +5,40 @@ import dlib
 from imutils import face_utils
 
 
-
+predictor_model = "shape_predictor_68_face_landmarks.dat"
 faceCascade = cv2.CascadeClassifier('find-face-haar.xml')
 face_detector = dlib.get_frontal_face_detector()
 
+face_predictor = dlib.shape_predictor(predictor_model)
 
-a=0
+
+
 blue = (255, 0, 0)
 green = (0, 255, 0)
-while True:
-    for k in range(1, 16):
-        img = cv2.imread("train/insult/{}.jpg".format(k))
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        faces = faceCascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=5, minSize=(20, 20)) # haar
-        detected_faces = face_detector(gray, 1) # dlib cascade
+for k in range(1, 16):
+    img = cv2.imread("train/insult/{}.jpg".format(k))
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        for (x,y,w,h) in faces:
-            cv2.rectangle(img, (x, y),(x+w,y+h),blue,2)
-            roi_gray = gray[y:y+h, x:x+w]
-            roi_color = img[y:y+h, x:x+w]
+    faces = faceCascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=5, minSize=(20, 20)) # haar
+    detected_faces = face_detector(gray, 1) # dlib cascade
 
-        for c in detected_faces:
-            (x, y, w, h) = face_utils.rect_to_bb(c)
-            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    for (x,y,w,h) in faces: # haar rectangle
+        cv2.rectangle(img, (x, y),(x+w,y+h),blue,2)
+        # roi_gray = gray[y:y+h, x:x+w]
+        # roi_color = img[y:y+h, x:x+w]
 
-        cv2.imwrite("train/insult/result/{}.new.jpg".format(k), img)
-        a=a+1
+    for c in detected_faces: # dlib rectangle
+        (x, y, w, h) = face_utils.rect_to_bb(c)
+        cv2.rectangle(img, (x, y), (x + w, y + h), green, 2)
+
+        shape = face_predictor(gray, c)
+        shape = face_utils.shape_to_np(shape)
+        for (x, y) in shape: # dlib circles
+            cv2.circle(img, (x, y), 1, (0, 0, 255), -1)
+
+
+    cv2.imwrite("train/insult/result_landmarks/{}.new.jpg".format(k), img)
+    print(1)
 
 cv2.destroyAllWindows()
