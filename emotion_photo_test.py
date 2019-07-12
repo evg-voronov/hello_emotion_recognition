@@ -35,12 +35,7 @@ def format_image(image):
 network = EMR()
 network.build_network()
 
-video_capture = cv2.VideoCapture(0)
 font = cv2.FONT_HERSHEY_SIMPLEX
-
-feelings_faces = []
-for index, emotion in enumerate(EMOTIONS):
-    feelings_faces.append(cv2.imread('./emojis/' + emotion + '.png', -1))
 
 
 for k in range(1, input_photo):
