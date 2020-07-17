@@ -23,12 +23,6 @@ def format_image(image):
     return image
 
 
-network = EMR()
-network.build_network()
-
-font = cv2.FONT_HERSHEY_SIMPLEX
-
-
 def emotions(image, frame):
     result = network.predict(image)
 
@@ -38,3 +32,7 @@ def emotions(image, frame):
             cv2.putText(frame, str(int(result[0][index]*100))+" %", (180, index * 40 + 40), cv2.FONT_HERSHEY_TRIPLEX,
                         1, (255, 0, 0), 2)
     return frame
+
+
+network = EMR()
+network.build_network()

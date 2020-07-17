@@ -1,15 +1,14 @@
-import sys
-from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication, QLabel, QVBoxLayout)
+from PyQt5.QtWidgets import (QWidget, QPushButton, QApplication, QLabel, QVBoxLayout)
 from PyQt5.QtCore import QTimer, Qt
-from PyQt5.QtGui import QIcon, QImage, QPixmap
+from PyQt5.QtGui import QImage, QPixmap
 import cv2
 import find_face_video as f
 import emotion_video as e
+import sys
 
 
 class QtCapture(QWidget):
-    global a
-    a = 0
+    switch = 0
 
     def __init__(self, *args):
         super(QWidget, self).__init__()
@@ -23,9 +22,9 @@ class QtCapture(QWidget):
 
     def nextFrameSlot(self):
         ret, frame = self.cap.read()
-        if a == 1:
+        if self.switch == 1:
             frame = f.find_face(frame)
-        elif a == 2:
+        elif self.switch == 2:
             image = e.format_image(frame)
             frame = e.emotions(image, frame)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -34,8 +33,7 @@ class QtCapture(QWidget):
         self.video_frame.setPixmap(pix)
 
     def start(self):
-        global a
-        a = 0
+        self.switch = 0
         self.timer = QTimer()
         self.timer.timeout.connect(self.nextFrameSlot)
         self.timer.start(1000./30)  # задаем fps
@@ -48,15 +46,13 @@ class QtCapture(QWidget):
         super(QWidget, self).deleteLater()
 
     def key_points(self):
-        global a
-        a = 1
+        self.switch = 1
         self.timer = QTimer()
         self.timer.timeout.connect(self.nextFrameSlot)
         self.timer.start(1000./30)  # задаем fps
 
     def emotion(self):
-        global a
-        a = 2
+        self.switch = 2
         self.timer = QTimer()
         self.timer.timeout.connect(self.nextFrameSlot)
         self.timer.start(1000./30)  # задаем fps
@@ -71,11 +67,8 @@ class ControlWindow(QWidget):
         self.start_button.clicked.connect(self.startCapture)
         self.quit_button = QPushButton('выход')
         self.quit_button.clicked.connect(self.endCapture)
-
         self.key_points_button = QPushButton('точки')
         self.emotion_button = QPushButton('эмоции')
-
-
         self.end_button = QPushButton('пауза')
 
         vbox = QVBoxLayout(self)
@@ -89,7 +82,6 @@ class ControlWindow(QWidget):
         self.setGeometry(100, 100, 220, 200)
         self.show()
 
-
     def startCapture(self):
         if not self.capture:
             self.capture = QtCapture(0)
@@ -102,7 +94,6 @@ class ControlWindow(QWidget):
         self.capture.start()
         self.capture.show()
 
-
     def endCapture(self):
         self.capture.deleteLater()
         self.capture = None
@@ -110,8 +101,6 @@ class ControlWindow(QWidget):
 
 
 if __name__ == '__main__':
-
-    import sys
     app = QApplication(sys.argv)
     window = ControlWindow()
     sys.exit(app.exec_())
